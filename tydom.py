@@ -76,12 +76,16 @@ class Tydom():
         return digestAuth.build_digest_header('GET', "https://{}:443/mediation/client?mac={}&appli=1".format(self.host, self.mac))
 
 
-    async def _send_message(self, method, msg):
+    async def _send_message(self, method, msg, body=""):
         '''
         Send message to tydom server and wait response
         Return response as a dict or None if response has no data
         '''
-        txt = self.cmd_prefix + method +' ' + msg +" HTTP/1.1\r\nContent-Length: 0\r\nContent-Type: application/json; charset=UTF-8\r\nTransac-Id: 0\r\n\r\n"
+        txt = self.cmd_prefix + method + ' ' + msg + " HTTP/1.1\r\nContent-Length: " + str(len(body)) + "\r\nContent-Type: application/json; charset=UTF-8\r\nTransac-Id: 0\r\n\r\n"
+        
+        if body != "":
+            txt = txt + body + "\r\n\r\n"
+        
         a_bytes = bytes(txt, "ascii")
         if not 'pwd' in msg:
             print('>>>>>> Send Request:', method, msg)
@@ -241,6 +245,9 @@ class Tydom():
  
  
             self._is_connected = True
+            
+    async def disconnect(self):
+        await self.connection.close()
   
     # Get some information on Tydom
     async def get_info(self):
